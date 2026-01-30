@@ -1,0 +1,1192 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>Aapje Rekenspel</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Chewy&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Chewy', cursive;
+            background: #87CEEB;
+            overflow: hidden;
+            height: 100vh;
+            width: 100vw;
+            touch-action: none;
+            -webkit-user-select: none;
+            user-select: none;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            position: fixed;
+            top: 0;
+            left: 0;
+        }
+
+        #startScreen {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(255, 255, 255, 0.95);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        #startScreen h1 {
+            font-size: 48px;
+            color: #8B4513;
+            margin-bottom: 20px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
+        }
+
+        #startScreen p {
+            font-size: 20px;
+            margin-bottom: 30px;
+            color: #555;
+        }
+
+        .table-selection {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            justify-content: center;
+            margin-bottom: 30px;
+            max-width: 400px;
+        }
+
+        .table-btn {
+            width: 60px;
+            height: 60px;
+            font-size: 24px;
+            border: 3px solid #8B4513;
+            background: white;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-family: 'Chewy', cursive;
+        }
+
+        .table-btn:hover {
+            transform: scale(1.1);
+        }
+
+        .table-btn.selected {
+            background: #FFD700;
+            border-color: #FF8C00;
+            font-weight: bold;
+        }
+
+        #startBtn {
+            padding: 20px 40px;
+            font-size: 28px;
+            background: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 15px;
+            cursor: pointer;
+            box-shadow: 0 6px 0 #388E3C;
+            transition: all 0.1s;
+            font-family: 'Chewy', cursive;
+        }
+
+        #startBtn:hover {
+            background: #45a049;
+        }
+
+        #startBtn:active {
+            transform: translateY(4px);
+            box-shadow: 0 2px 0 #388E3C;
+        }
+
+        #startBtn:disabled {
+            background: #ccc;
+            box-shadow: 0 6px 0 #999;
+            cursor: not-allowed;
+        }
+
+        #gameCanvas {
+            display: block;
+            background: #87CEEB;
+            touch-action: none;
+            width: 100vw;
+            height: 100vh;
+            position: absolute;
+            top: 0;
+            left: 0;
+        }
+
+        #mathQuestion {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: white;
+            padding: 40px;
+            border-radius: 20px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+            display: none;
+            z-index: 100;
+            min-width: 400px;
+            max-width: 90vw;
+        }
+
+        @media (max-width: 768px) {
+            #mathQuestion {
+                padding: 20px;
+                min-width: unset;
+                width: 90vw;
+            }
+
+            #mathQuestion h2 {
+                font-size: 28px;
+                margin-bottom: 20px;
+            }
+
+            .answer-btn {
+                padding: 15px;
+                font-size: 20px;
+            }
+
+            #startScreen h1 {
+                font-size: 32px;
+            }
+
+            #startScreen p {
+                font-size: 16px;
+            }
+
+            .table-btn {
+                width: 50px;
+                height: 50px;
+                font-size: 20px;
+            }
+
+            #startBtn {
+                padding: 15px 30px;
+                font-size: 24px;
+            }
+        }
+
+        #mathQuestion h2 {
+            text-align: center;
+            color: #8B4513;
+            margin-bottom: 30px;
+            font-size: 36px;
+        }
+
+        .answer-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+
+        .answer-btn {
+            padding: 20px;
+            font-size: 24px;
+            background: #FFD700;
+            border: 3px solid #FF8C00;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-family: 'Chewy', cursive;
+        }
+
+        .answer-btn:active {
+            transform: scale(0.95);
+        }
+
+        .answer-btn.correct {
+            background: #4CAF50;
+            border-color: #388E3C;
+        }
+
+        .answer-btn.wrong {
+            background: #f44336;
+            border-color: #d32f2f;
+        }
+
+        #score {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            font-size: 24px;
+            color: white;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+            z-index: 10;
+        }
+
+        #lives {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            font-size: 24px;
+            color: white;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+            z-index: 10;
+        }
+
+        .hidden {
+            display: none !important;
+        }
+    </style>
+</head>
+<body>
+    <div id="startScreen">
+        <h1>🐵 Aapje Rekenspel 🍌</h1>
+        <p>Kies welke tafels je wilt oefenen:</p>
+        <div class="table-selection" id="tableSelection">
+            <!-- Buttons will be generated by JS -->
+        </div>
+        <button id="startBtn" disabled>Start Spel!</button>
+    </div>
+
+    <div id="score">Score: 0</div>
+    <div id="lives">❤️ ❤️ ❤️</div>
+    
+    <canvas id="gameCanvas"></canvas>
+    
+    <div id="mathQuestion">
+        <h2 id="questionText"></h2>
+        <div class="answer-grid" id="answerGrid">
+            <!-- Answer buttons will be generated by JS -->
+        </div>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+        
+        // Game state
+        let gameRunning = false;
+        let gamePaused = false;
+        let score = 0;
+        let lives = 3;
+        let selectedTables = [];
+        let currentQuestion = null;
+        let scrollSpeed = 3;
+        let scrollOffset = 0;
+
+        // Monkey object
+        const monkey = {
+            x: 150,
+            y: 400,
+            width: 40,
+            height: 46,
+            velocityY: 0,
+            jumping: false,
+            gravity: 0.6,
+            jumpPower: -12
+        };
+        
+        // Helper function to get ground Y position based on canvas height
+        function getGroundY() {
+            return canvas.height * 0.9; // 90% down the screen
+        }
+        
+        // Helper function to get platform heights relative to ground
+        function getPlatformY(heightAboveGround) {
+            return getGroundY() - heightAboveGround;
+        }
+
+        // Game objects
+        let platforms = [];
+        let bananas = [];
+        let clouds = [];
+        let groundSegments = [];
+        
+        // Parallax background layers
+        let mountains = {
+            back: [],
+            mid: [],
+            front: []
+        };
+        
+        // Resize canvas to fill screen
+        let previousHeight = 0;
+        
+        function resizeCanvas() {
+            const oldHeight = previousHeight || canvas.height;
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+            
+            // If height changed significantly and game objects exist, update positions
+            if (oldHeight > 0 && Math.abs(oldHeight - canvas.height) > 50 && groundSegments.length > 0) {
+                // Update ground segments
+                groundSegments.forEach(segment => {
+                    segment.y = getGroundY();
+                    segment.height = canvas.height * 0.1;
+                });
+                
+                // Update platforms
+                const groundY = getGroundY();
+                platforms.forEach(platform => {
+                    const heightAboveGround = oldHeight * 0.9 - platform.y;
+                    platform.y = groundY - heightAboveGround;
+                });
+                
+                // Update bananas
+                bananas.forEach(banana => {
+                    const heightAboveGround = oldHeight * 0.9 - banana.y;
+                    banana.y = groundY - heightAboveGround;
+                });
+                
+                // Update monkey
+                if (monkey.y < canvas.height) {
+                    const heightAboveGround = oldHeight * 0.9 - monkey.y;
+                    monkey.y = groundY - heightAboveGround;
+                }
+                
+                // Update clouds
+                clouds.forEach(cloud => {
+                    cloud.y = Math.min(cloud.y, canvas.height * 0.3);
+                });
+            }
+            
+            previousHeight = canvas.height;
+        }
+        
+        resizeCanvas();
+        window.addEventListener('resize', resizeCanvas);
+        window.addEventListener('orientationchange', () => {
+            setTimeout(resizeCanvas, 100);
+        });
+
+        // Initialize table selection
+        const tableSelection = document.getElementById('tableSelection');
+        for (let i = 1; i <= 10; i++) {
+            const btn = document.createElement('button');
+            btn.className = 'table-btn';
+            btn.textContent = i;
+            btn.onclick = () => toggleTable(i, btn);
+            tableSelection.appendChild(btn);
+        }
+
+        function toggleTable(table, btn) {
+            const index = selectedTables.indexOf(table);
+            if (index > -1) {
+                selectedTables.splice(index, 1);
+                btn.classList.remove('selected');
+            } else {
+                selectedTables.push(table);
+                btn.classList.add('selected');
+            }
+            document.getElementById('startBtn').disabled = selectedTables.length === 0;
+        }
+
+        document.getElementById('startBtn').onclick = startGame;
+
+        function startGame() {
+            document.getElementById('startScreen').classList.add('hidden');
+            gameRunning = true;
+            gamePaused = false;
+            score = 0;
+            lives = 3;
+            scrollOffset = 0;
+            scrollSpeed = 3;
+            
+            initializeGame();
+            gameLoop();
+        }
+
+        function initMountains() {
+            mountains.back = [];
+            mountains.mid = [];
+            mountains.front = [];
+            
+            // Create back mountains (slowest, lightest)
+            for (let i = 0; i < 5; i++) {
+                mountains.back.push({
+                    x: i * 400,
+                    height: 100 + Math.random() * 100,
+                    width: 300 + Math.random() * 200
+                });
+            }
+            
+            // Create middle mountains
+            for (let i = 0; i < 5; i++) {
+                mountains.mid.push({
+                    x: i * 500,
+                    height: 120 + Math.random() * 80,
+                    width: 350 + Math.random() * 150
+                });
+            }
+            
+            // Create front mountains (fastest, darkest)
+            for (let i = 0; i < 5; i++) {
+                mountains.front.push({
+                    x: i * 600,
+                    height: 150 + Math.random() * 100,
+                    width: 400 + Math.random() * 200
+                });
+            }
+        }
+        
+        function drawMountains() {
+            const groundY = getGroundY();
+            
+            // Back mountains (parallax 0.2x speed)
+            ctx.fillStyle = 'rgba(100, 149, 237, 0.3)';
+            mountains.back.forEach(m => {
+                const x = m.x - (scrollOffset * 0.2);
+                ctx.beginPath();
+                ctx.moveTo(x, groundY);
+                ctx.lineTo(x + m.width / 2, groundY - m.height);
+                ctx.lineTo(x + m.width, groundY);
+                ctx.closePath();
+                ctx.fill();
+            });
+            
+            // Middle mountains (parallax 0.4x speed)
+            ctx.fillStyle = 'rgba(70, 130, 180, 0.5)';
+            mountains.mid.forEach(m => {
+                const x = m.x - (scrollOffset * 0.4);
+                ctx.beginPath();
+                ctx.moveTo(x, groundY);
+                ctx.lineTo(x + m.width / 2, groundY - m.height);
+                ctx.lineTo(x + m.width, groundY);
+                ctx.closePath();
+                ctx.fill();
+            });
+            
+            // Front mountains (parallax 0.6x speed)
+            ctx.fillStyle = 'rgba(47, 79, 79, 0.6)';
+            mountains.front.forEach(m => {
+                const x = m.x - (scrollOffset * 0.6);
+                ctx.beginPath();
+                ctx.moveTo(x, groundY);
+                ctx.lineTo(x + m.width / 2, groundY - m.height);
+                ctx.lineTo(x + m.width, groundY);
+                ctx.closePath();
+                ctx.fill();
+            });
+            
+            // Add new mountains when they go off screen
+            ['back', 'mid', 'front'].forEach((layer, idx) => {
+                const speeds = [0.2, 0.4, 0.6];
+                const widths = [500, 600, 800];
+                
+                mountains[layer] = mountains[layer].filter(m => 
+                    m.x - (scrollOffset * speeds[idx]) > -m.width - 200
+                );
+                
+                if (mountains[layer].length < 5) {
+                    const lastMountain = mountains[layer][mountains[layer].length - 1] || { x: 0, width: 0 };
+                    const heightRanges = [[100, 200], [120, 200], [150, 250]];
+                    const widthRanges = [[300, 500], [350, 500], [400, 600]];
+                    
+                    mountains[layer].push({
+                        x: lastMountain.x + lastMountain.width + Math.random() * 100,
+                        height: heightRanges[idx][0] + Math.random() * (heightRanges[idx][1] - heightRanges[idx][0]),
+                        width: widthRanges[idx][0] + Math.random() * (widthRanges[idx][1] - widthRanges[idx][0])
+                    });
+                }
+            });
+        }
+
+        function initializeGame() {
+            platforms = [];
+            bananas = [];
+            clouds = [];
+            groundSegments = [];
+            
+            // Initialize parallax mountains
+            initMountains();
+            
+            // Set monkey position relative to screen
+            monkey.y = getGroundY() - 100;
+            
+            const groundY = getGroundY();
+            const groundHeight = canvas.height * 0.1; // 10% of screen height
+            
+            // Create continuous ground with occasional gaps
+            let currentX = 0;
+            for (let i = 0; i < 30; i++) {
+                // Determine if this should be ground or a gap
+                const difficulty = Math.min(i / 20, 1);
+                const isGap = i > 2 && Math.random() < (0.15 + difficulty * 0.15);
+                
+                if (isGap) {
+                    // Create a gap
+                    const gapWidth = 100 + Math.random() * 100;
+                    currentX += gapWidth;
+                } else {
+                    // Create ground segment
+                    const segmentWidth = 200 + Math.random() * 300;
+                    groundSegments.push({
+                        x: currentX,
+                        y: groundY,
+                        width: segmentWidth,
+                        height: groundHeight
+                    });
+                    currentX += segmentWidth;
+                }
+            }
+            
+            // Create floating platforms with bananas
+            for (let i = 0; i < 20; i++) {
+                const platformX = 300 + i * 300 + Math.random() * 200;
+                // Platform only 30-60px above ground (easily jumpable)
+                const platformY = groundY - 30 - Math.random() * 30; 
+                const platformWidth = 100 + Math.random() * 80;
+                
+                platforms.push({
+                    x: platformX,
+                    y: platformY,
+                    width: platformWidth,
+                    height: 20
+                });
+                
+                // Add banana on SOME platforms - only 30% chance
+                if (Math.random() < 0.3) {
+                    bananas.push({
+                        x: platformX + platformWidth / 2 - 15,
+                        y: platformY - 40,
+                        width: 30,
+                        height: 30,
+                        collected: false
+                    });
+                }
+            }
+            
+            // Create clouds
+            for (let i = 0; i < 5; i++) {
+                clouds.push({
+                    x: Math.random() * canvas.width,
+                    y: Math.random() * (canvas.height * 0.3) + 50,
+                    width: 80 + Math.random() * 40,
+                    speed: 0.3 + Math.random() * 0.5
+                });
+            }
+            
+            monkey.velocityY = 0;
+            monkey.jumping = false;
+        }
+
+        function createPlatform(x, difficulty = 1) {
+            // Difficulty affects platform size and height variation
+            const minWidth = 140 - (difficulty * 40); // 140px to 100px
+            const maxWidth = 200 - (difficulty * 60); // 200px to 140px
+            const heightVariation = 50 + (difficulty * 50); // 50px to 100px
+            
+            const platform = {
+                x: x,
+                y: canvas.height - 200 + Math.random() * heightVariation - (heightVariation / 2),
+                width: minWidth + Math.random() * (maxWidth - minWidth),
+                height: 20
+            };
+            platforms.push(platform);
+            
+            // Add banana on platforms - more likely on easier sections
+            const bananaChance = 0.7 - (difficulty * 0.2); // 70% to 50% chance
+            if (Math.random() < bananaChance) {
+                bananas.push({
+                    x: platform.x + platform.width / 2 - 15,
+                    y: platform.y - 50,
+                    width: 30,
+                    height: 30,
+                    collected: false
+                });
+            }
+        }
+
+        // Touch and click controls for mobile
+        let touchCooldown = false;
+        
+        function handleJump(e) {
+            if (!gameRunning || gamePaused || touchCooldown) return;
+            
+            if (!monkey.jumping) {
+                e.preventDefault(); // Prevent scrolling on mobile
+                monkey.velocityY = monkey.jumpPower;
+                monkey.jumping = true;
+                
+                // Add cooldown to prevent double jumps
+                touchCooldown = true;
+                setTimeout(() => touchCooldown = false, 200);
+            }
+        }
+
+        document.addEventListener('keydown', (e) => {
+            if (e.code === 'Space' && !monkey.jumping && !gamePaused && gameRunning) {
+                e.preventDefault();
+                monkey.velocityY = monkey.jumpPower;
+                monkey.jumping = true;
+            }
+        });
+
+        canvas.addEventListener('mousedown', handleJump);
+        canvas.addEventListener('touchstart', handleJump, { passive: false });
+
+        function drawMonkey() {
+            const x = monkey.x;
+            const y = monkey.y;
+            const scale = 1;
+            
+            // Body
+            ctx.fillStyle = '#8B4513';
+            ctx.beginPath();
+            ctx.ellipse(x + 20, y + 28, 12 * scale, 16 * scale, 0, 0, Math.PI * 2);
+            ctx.fill();
+            
+            // Legs
+            ctx.fillStyle = '#654321';
+            ctx.beginPath();
+            ctx.ellipse(x + 12, y + 38, 5 * scale, 8 * scale, 0, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.beginPath();
+            ctx.ellipse(x + 28, y + 38, 5 * scale, 8 * scale, 0, 0, Math.PI * 2);
+            ctx.fill();
+            
+            // Arms
+            ctx.fillStyle = '#8B4513';
+            ctx.beginPath();
+            ctx.ellipse(x + 8, y + 22, 4 * scale, 10 * scale, -0.3, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.beginPath();
+            ctx.ellipse(x + 32, y + 22, 4 * scale, 10 * scale, 0.3, 0, Math.PI * 2);
+            ctx.fill();
+            
+            // Head
+            ctx.fillStyle = '#A0522D';
+            ctx.beginPath();
+            ctx.arc(x + 20, y + 12, 14 * scale, 0, Math.PI * 2);
+            ctx.fill();
+            
+            // Ears
+            ctx.fillStyle = '#D2691E';
+            ctx.beginPath();
+            ctx.arc(x + 8, y + 8, 6 * scale, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.beginPath();
+            ctx.arc(x + 32, y + 8, 6 * scale, 0, Math.PI * 2);
+            ctx.fill();
+            
+            // Inner ears
+            ctx.fillStyle = '#F4A460';
+            ctx.beginPath();
+            ctx.arc(x + 8, y + 8, 3 * scale, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.beginPath();
+            ctx.arc(x + 32, y + 8, 3 * scale, 0, Math.PI * 2);
+            ctx.fill();
+            
+            // Face/snout
+            ctx.fillStyle = '#F4A460';
+            ctx.beginPath();
+            ctx.ellipse(x + 20, y + 16, 10 * scale, 8 * scale, 0, 0, Math.PI * 2);
+            ctx.fill();
+            
+            // Eyes - white
+            ctx.fillStyle = 'white';
+            ctx.beginPath();
+            ctx.arc(x + 15, y + 12, 4 * scale, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.beginPath();
+            ctx.arc(x + 25, y + 12, 4 * scale, 0, Math.PI * 2);
+            ctx.fill();
+            
+            // Eyes - pupils
+            ctx.fillStyle = '#2C1810';
+            ctx.beginPath();
+            ctx.arc(x + 16, y + 13, 2.5 * scale, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.beginPath();
+            ctx.arc(x + 26, y + 13, 2.5 * scale, 0, Math.PI * 2);
+            ctx.fill();
+            
+            // Nose
+            ctx.fillStyle = '#654321';
+            ctx.beginPath();
+            ctx.ellipse(x + 20, y + 16, 2 * scale, 1.5 * scale, 0, 0, Math.PI * 2);
+            ctx.fill();
+            
+            // Smile
+            ctx.strokeStyle = '#654321';
+            ctx.lineWidth = 1.5;
+            ctx.beginPath();
+            ctx.arc(x + 20, y + 16, 5 * scale, 0.2, Math.PI - 0.2);
+            ctx.stroke();
+            
+            // Tail (curly)
+            ctx.strokeStyle = '#8B4513';
+            ctx.lineWidth = 3;
+            ctx.beginPath();
+            ctx.arc(x + 8, y + 30, 6, -Math.PI / 2, Math.PI);
+            ctx.stroke();
+        }
+
+        function drawGround() {
+            ctx.fillStyle = '#654321';
+            groundSegments.forEach(segment => {
+                if (!segment.isMarker && segment.width > 1) {
+                    ctx.fillRect(segment.x - scrollOffset, segment.y, segment.width, segment.height);
+                    
+                    // Grass on top
+                    ctx.fillStyle = '#228B22';
+                    ctx.fillRect(segment.x - scrollOffset, segment.y - 5, segment.width, 5);
+                    ctx.fillStyle = '#654321';
+                }
+            });
+        }
+
+        function drawPlatforms() {
+            ctx.fillStyle = '#654321';
+            platforms.forEach(platform => {
+                ctx.fillRect(platform.x - scrollOffset, platform.y, platform.width, platform.height);
+                
+                // Grass on top
+                ctx.fillStyle = '#228B22';
+                ctx.fillRect(platform.x - scrollOffset, platform.y - 5, platform.width, 5);
+                ctx.fillStyle = '#654321';
+            });
+        }
+
+        function drawBananas() {
+            bananas.forEach(banana => {
+                if (!banana.collected) {
+                    const x = banana.x - scrollOffset;
+                    const y = banana.y;
+                    
+                    // Draw banana emoji
+                    ctx.font = '40px Arial';
+                    ctx.textAlign = 'center';
+                    ctx.textBaseline = 'middle';
+                    ctx.fillText('🍌', x + 15, y + 15);
+                }
+            });
+        }
+
+        function drawClouds() {
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.8)';
+            clouds.forEach(cloud => {
+                ctx.beginPath();
+                ctx.arc(cloud.x, cloud.y, 20, 0, Math.PI * 2);
+                ctx.arc(cloud.x + 25, cloud.y, 25, 0, Math.PI * 2);
+                ctx.arc(cloud.x + 50, cloud.y, 20, 0, Math.PI * 2);
+                ctx.fill();
+                
+                cloud.x -= cloud.speed;
+                if (cloud.x < -100) {
+                    cloud.x = canvas.width + 100;
+                    cloud.y = Math.random() * 200 + 50;
+                }
+            });
+        }
+
+        function updateMonkey() {
+            // Apply gravity
+            monkey.velocityY += monkey.gravity;
+            monkey.y += monkey.velocityY;
+            
+            // Check ground collision
+            let onGround = false;
+            groundSegments.forEach(segment => {
+                if (monkey.x + monkey.width > segment.x - scrollOffset + 5 &&
+                    monkey.x < segment.x - scrollOffset + segment.width - 5 &&
+                    monkey.y + monkey.height >= segment.y &&
+                    monkey.y + monkey.height <= segment.y + 15 &&
+                    monkey.velocityY >= 0) {
+                    monkey.y = segment.y - monkey.height;
+                    monkey.velocityY = 0;
+                    monkey.jumping = false;
+                    onGround = true;
+                }
+            });
+            
+            // Check platform collision
+            platforms.forEach(platform => {
+                if (monkey.x + monkey.width > platform.x - scrollOffset + 5 &&
+                    monkey.x < platform.x - scrollOffset + platform.width - 5 &&
+                    monkey.y + monkey.height >= platform.y &&
+                    monkey.y + monkey.height <= platform.y + 15 &&
+                    monkey.velocityY >= 0) {
+                    monkey.y = platform.y - monkey.height;
+                    monkey.velocityY = 0;
+                    monkey.jumping = false;
+                }
+            });
+            
+            // Fall off screen
+            if (monkey.y > canvas.height) {
+                loseLife();
+            }
+            
+            // Check banana collision
+            bananas.forEach(banana => {
+                if (!banana.collected &&
+                    monkey.x + monkey.width > banana.x - scrollOffset &&
+                    monkey.x < banana.x - scrollOffset + banana.width &&
+                    monkey.y + monkey.height > banana.y &&
+                    monkey.y < banana.y + banana.height) {
+                    banana.collected = true;
+                    showMathQuestion();
+                }
+            });
+        }
+
+        function updateWorld() {
+            scrollOffset += scrollSpeed;
+            
+            // Remove ground segments that are off screen
+            groundSegments = groundSegments.filter(s => s.x - scrollOffset + s.width > -50);
+            
+            // Remove platforms that are off screen
+            platforms = platforms.filter(p => p.x - scrollOffset + p.width > -50);
+            
+            bananas = bananas.filter(b => b.x - scrollOffset > -100);
+            
+            // Add new ground segments
+            if (groundSegments.length > 0) {
+                const lastSegment = groundSegments[groundSegments.length - 1];
+                const lastSegmentEnd = lastSegment.x + lastSegment.width;
+                
+                // Keep generating ground ahead
+                if (lastSegmentEnd < scrollOffset + canvas.width + 1000) {
+                    const difficulty = Math.min(score / 200, 1);
+                    const isGap = Math.random() < (0.15 + difficulty * 0.15);
+                    
+                    const groundY = getGroundY();
+                    const groundHeight = canvas.height * 0.1;
+                    
+                    if (isGap) {
+                        const gapWidth = 100 + Math.random() * (100 + difficulty * 100);
+                        const segmentWidth = 200 + Math.random() * 300;
+                        // After gap, add ground
+                        groundSegments.push({
+                            x: lastSegmentEnd + gapWidth,
+                            y: groundY,
+                            width: segmentWidth,
+                            height: groundHeight
+                        });
+                    } else {
+                        const segmentWidth = 200 + Math.random() * 300;
+                        groundSegments.push({
+                            x: lastSegmentEnd,
+                            y: groundY,
+                            width: segmentWidth,
+                            height: groundHeight
+                        });
+                    }
+                }
+            }
+            
+            // Add new platforms with bananas
+            if (platforms.length < 20) {
+                const lastPlatform = platforms.length > 0 ? platforms[platforms.length - 1] : { x: 0 };
+                const newX = Math.max(lastPlatform.x + 250 + Math.random() * 200, scrollOffset + canvas.width);
+                
+                // Keep platforms LOW - only 30-60px above ground
+                const groundY = getGroundY();
+                const newY = groundY - 30 - Math.random() * 30;
+                const newWidth = 100 + Math.random() * 80;
+                
+                platforms.push({
+                    x: newX,
+                    y: newY,
+                    width: newWidth,
+                    height: 20
+                });
+                
+                // Add banana - only 30% chance
+                if (Math.random() < 0.3) {
+                    bananas.push({
+                        x: newX + newWidth / 2 - 15,
+                        y: newY - 40,
+                        width: 30,
+                        height: 30,
+                        collected: false
+                    });
+                }
+            }
+            
+            // Gradually increase scroll speed with score
+            scrollSpeed = Math.min(3 + score * 0.03, 6);
+        }
+
+        function showMathQuestion() {
+            gamePaused = true;
+            
+            const table = selectedTables[Math.floor(Math.random() * selectedTables.length)];
+            const multiplier = Math.floor(Math.random() * 10) + 1;
+            const correctAnswer = table * multiplier;
+            
+            currentQuestion = {
+                table: table,
+                multiplier: multiplier,
+                correctAnswer: correctAnswer
+            };
+            
+            document.getElementById('questionText').textContent = `${table} × ${multiplier} = ?`;
+            
+            // Generate answer options
+            const answers = [correctAnswer];
+            while (answers.length < 4) {
+                const wrongAnswer = correctAnswer + (Math.floor(Math.random() * 11) - 5);
+                if (wrongAnswer > 0 && !answers.includes(wrongAnswer)) {
+                    answers.push(wrongAnswer);
+                }
+            }
+            
+            // Shuffle answers
+            answers.sort(() => Math.random() - 0.5);
+            
+            const answerGrid = document.getElementById('answerGrid');
+            answerGrid.innerHTML = '';
+            
+            answers.forEach(answer => {
+                const btn = document.createElement('button');
+                btn.className = 'answer-btn';
+                btn.textContent = answer;
+                btn.onclick = () => checkAnswer(answer, correctAnswer, btn);
+                answerGrid.appendChild(btn);
+            });
+            
+            document.getElementById('mathQuestion').style.display = 'block';
+        }
+
+        function checkAnswer(selected, correct, btn) {
+            const buttons = document.querySelectorAll('.answer-btn');
+            buttons.forEach(b => b.disabled = true);
+            
+            if (selected === correct) {
+                btn.classList.add('correct');
+                score += 10;
+                updateScore();
+                
+                // Create confetti!
+                createConfetti(btn);
+                
+                setTimeout(() => {
+                    // Fade out animation
+                    const popup = document.getElementById('mathQuestion');
+                    popup.style.transition = 'opacity 0.3s ease, transform 0.3s ease';
+                    popup.style.opacity = '0';
+                    popup.style.transform = 'translate(-50%, -50%) scale(0.8)';
+                    
+                    setTimeout(() => {
+                        popup.style.display = 'none';
+                        popup.style.opacity = '1';
+                        popup.style.transform = 'translate(-50%, -50%) scale(1)';
+                        popup.style.transition = '';
+                        gamePaused = false;
+                    }, 300);
+                }, 800);
+            } else {
+                btn.classList.add('wrong');
+                
+                // Show correct answer
+                buttons.forEach(b => {
+                    if (parseInt(b.textContent) === correct) {
+                        b.classList.add('correct');
+                    }
+                });
+                
+                setTimeout(() => {
+                    const popup = document.getElementById('mathQuestion');
+                    popup.style.transition = 'opacity 0.3s ease';
+                    popup.style.opacity = '0';
+                    
+                    setTimeout(() => {
+                        popup.style.display = 'none';
+                        popup.style.opacity = '1';
+                        popup.style.transition = '';
+                        gamePaused = false;
+                        loseLife();
+                    }, 300);
+                }, 1500);
+            }
+        }
+        
+        function createConfetti(btn) {
+            const rect = btn.getBoundingClientRect();
+            const colors = ['#FFD700', '#FF6B6B', '#4ECDC4', '#45B7D1', '#FFA07A', '#98D8C8', '#F7DC6F'];
+            
+            // Create 30 confetti pieces
+            for (let i = 0; i < 30; i++) {
+                const confetti = document.createElement('div');
+                confetti.style.position = 'fixed';
+                confetti.style.left = rect.left + rect.width / 2 + 'px';
+                confetti.style.top = rect.top + rect.height / 2 + 'px';
+                confetti.style.width = '10px';
+                confetti.style.height = '10px';
+                confetti.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+                confetti.style.borderRadius = Math.random() > 0.5 ? '50%' : '0';
+                confetti.style.pointerEvents = 'none';
+                confetti.style.zIndex = '1000';
+                confetti.style.transition = 'all 0.8s cubic-bezier(0, .9, .57, 1)';
+                
+                document.body.appendChild(confetti);
+                
+                // Animate confetti
+                setTimeout(() => {
+                    const angle = (Math.random() * Math.PI * 2);
+                    const distance = 50 + Math.random() * 100;
+                    const x = Math.cos(angle) * distance;
+                    const y = Math.sin(angle) * distance - 50;
+                    
+                    confetti.style.transform = `translate(${x}px, ${y}px) rotate(${Math.random() * 360}deg)`;
+                    confetti.style.opacity = '0';
+                }, 10);
+                
+                // Remove confetti after animation
+                setTimeout(() => {
+                    confetti.remove();
+                }, 1000);
+            }
+        }
+
+        function loseLife() {
+            lives--;
+            updateLives();
+            
+            if (lives <= 0) {
+                gameOver();
+            } else {
+                // Reset monkey position - spawn on ground level
+                monkey.y = getGroundY() - 100;
+                monkey.velocityY = 0;
+                monkey.jumping = false;
+            }
+        }
+
+        function updateScore() {
+            document.getElementById('score').textContent = `Score: ${score}`;
+        }
+
+        function updateLives() {
+            let hearts = '';
+            for (let i = 0; i < lives; i++) {
+                hearts += '❤️ ';
+            }
+            document.getElementById('lives').textContent = hearts;
+        }
+
+        function gameOver() {
+            gameRunning = false;
+            gamePaused = true;
+            
+            // Draw semi-transparent overlay
+            ctx.fillStyle = 'rgba(0, 0, 0, 0.8)';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            
+            // Game Over text with glow effect
+            ctx.shadowColor = '#FF6B6B';
+            ctx.shadowBlur = 20;
+            ctx.fillStyle = '#FF6B6B';
+            ctx.font = 'bold 72px Chewy, cursive';
+            ctx.textAlign = 'center';
+            ctx.fillText('GAME OVER!', canvas.width / 2, canvas.height / 2 - 80);
+            
+            // Reset shadow
+            ctx.shadowBlur = 0;
+            
+            // Score with background
+            ctx.fillStyle = 'rgba(255, 215, 0, 0.9)';
+            ctx.fillRect(canvas.width / 2 - 150, canvas.height / 2 - 20, 300, 60);
+            ctx.fillStyle = '#2C1810';
+            ctx.font = 'bold 36px Chewy, cursive';
+            ctx.fillText(`Jouw Score: ${score}`, canvas.width / 2, canvas.height / 2 + 20);
+            
+            // Restart button background
+            ctx.fillStyle = '#4CAF50';
+            ctx.fillRect(canvas.width / 2 - 180, canvas.height / 2 + 60, 360, 70);
+            ctx.fillStyle = 'white';
+            ctx.font = 'bold 32px Chewy, cursive';
+            ctx.fillText('👆 TIK HIER OM OPNIEUW TE SPELEN', canvas.width / 2, canvas.height / 2 + 105);
+            
+            // Add visual indicator for touch
+            let glowAlpha = 0;
+            let glowDirection = 1;
+            
+            function animateGlow() {
+                if (!gamePaused || gameRunning) return;
+                
+                glowAlpha += 0.03 * glowDirection;
+                if (glowAlpha >= 1 || glowAlpha <= 0) glowDirection *= -1;
+                
+                // Redraw game over screen with glow
+                ctx.fillStyle = 'rgba(0, 0, 0, 0.8)';
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+                
+                ctx.shadowColor = '#FF6B6B';
+                ctx.shadowBlur = 20;
+                ctx.fillStyle = '#FF6B6B';
+                ctx.font = 'bold 72px Chewy, cursive';
+                ctx.textAlign = 'center';
+                ctx.fillText('GAME OVER!', canvas.width / 2, canvas.height / 2 - 80);
+                ctx.shadowBlur = 0;
+                
+                ctx.fillStyle = 'rgba(255, 215, 0, 0.9)';
+                ctx.fillRect(canvas.width / 2 - 150, canvas.height / 2 - 20, 300, 60);
+                ctx.fillStyle = '#2C1810';
+                ctx.font = 'bold 36px Chewy, cursive';
+                ctx.fillText(`Jouw Score: ${score}`, canvas.width / 2, canvas.height / 2 + 20);
+                
+                // Animated button
+                ctx.fillStyle = `rgba(76, 175, 80, ${0.7 + glowAlpha * 0.3})`;
+                ctx.fillRect(canvas.width / 2 - 180, canvas.height / 2 + 60, 360, 70);
+                ctx.fillStyle = 'white';
+                ctx.font = 'bold 32px Chewy, cursive';
+                ctx.fillText('👆 TIK HIER OM OPNIEUW TE SPELEN', canvas.width / 2, canvas.height / 2 + 105);
+                
+                requestAnimationFrame(animateGlow);
+            }
+            
+            animateGlow();
+            
+            // Setup restart handlers
+            function restartGame(e) {
+                e.preventDefault();
+                canvas.removeEventListener('mousedown', restartGame);
+                canvas.removeEventListener('touchstart', restartGame);
+                document.getElementById('startScreen').classList.remove('hidden');
+                score = 0;
+                lives = 3;
+                updateScore();
+                updateLives();
+            }
+            
+            canvas.addEventListener('mousedown', restartGame);
+            canvas.addEventListener('touchstart', restartGame, { passive: false });
+        }
+
+        function gameLoop() {
+            if (!gameRunning) return;
+            
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            // Draw blue sky background
+            ctx.fillStyle = '#87CEEB';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            
+            drawClouds();
+            drawMountains(); // Draw parallax mountains
+            drawGround();
+            drawPlatforms();
+            drawBananas();
+            drawMonkey();
+            
+            // Only update game state when not paused
+            if (!gamePaused) {
+                updateMonkey();
+                updateWorld();
+            }
+            
+            requestAnimationFrame(gameLoop);
+        }
+    </script>
+</body>
+</html>
