@@ -660,7 +660,7 @@
         initMountains();
         
         // Set monkey position relative to screen
-        monkey.y = getGroundY() - 100;
+        monkey.y = Math.min(getGroundY() - 150, canvas.height * 0.5);
         
         const groundY = getGroundY();
         const groundHeight = canvas.height * 0.1; // 10% of screen height
@@ -1144,7 +1144,7 @@
             gameOver();
         } else {
             // Reset monkey position - spawn on ground level
-            monkey.y = getGroundY() - 100;
+            monkey.y = Math.min(getGroundY() - 150, canvas.height * 0.5);
             monkey.velocityY = 0;
             monkey.jumping = false;
             monkey.jumpsLeft = monkey.maxJumps;
@@ -1174,13 +1174,13 @@
         
         // Game Over text - clean and simple
         ctx.fillStyle = 'white';
-        ctx.font = 'bold 64px Chewy, cursive';
+        ctx.font = 'bold 64px Chewy, Comic Sans MS, cursive, sans-serif';
         ctx.textAlign = 'center';
         ctx.fillText('GAME OVER', canvas.width / 2, canvas.height / 2 - 60);
         
         // Score - clean
         ctx.fillStyle = '#FFD700';
-        ctx.font = 'bold 40px Chewy, cursive';
+        ctx.font = 'bold 40px Chewy, Comic Sans MS, cursive, sans-serif';
         ctx.fillText(`Score: ${score}`, canvas.width / 2, canvas.height / 2 + 10);
         
         // Restart button - rounded and clean
@@ -1191,7 +1191,7 @@
         ctx.fill();
         
         ctx.fillStyle = 'white';
-        ctx.font = 'bold 28px Chewy, cursive';
+        ctx.font = 'bold 28px Chewy, Comic Sans MS, cursive, sans-serif';
         ctx.fillText('Opnieuw Spelen', canvas.width / 2, btnY + 38);
         
         // Setup restart handlers
