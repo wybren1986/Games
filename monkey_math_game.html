@@ -5,7 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>Aapje Rekenspel</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.googleapis.com" crossorigin>
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Chewy&display=swap" rel="stylesheet">
     <style>
@@ -17,7 +17,7 @@
 
 ```
     body {
-        font-family: 'Chewy', cursive;
+        font-family: 'Chewy', 'Comic Sans MS', 'Chalkboard SE', 'Comic Neue', cursive, sans-serif;
         background: #87CEEB;
         overflow: hidden;
         height: 100vh;
@@ -78,7 +78,7 @@
         border-radius: 10px;
         cursor: pointer;
         transition: all 0.3s;
-        font-family: 'Chewy', cursive;
+        font-family: 'Chewy', 'Comic Sans MS', 'Chalkboard SE', cursive, sans-serif;
     }
 
     .table-btn:hover {
@@ -101,7 +101,7 @@
         cursor: pointer;
         box-shadow: 0 6px 0 #388E3C;
         transition: all 0.1s;
-        font-family: 'Chewy', cursive;
+        font-family: 'Chewy', 'Comic Sans MS', 'Chalkboard SE', cursive, sans-serif;
     }
 
     #startBtn:hover {
@@ -203,7 +203,7 @@
         border-radius: 10px;
         cursor: pointer;
         transition: all 0.2s;
-        font-family: 'Chewy', cursive;
+        font-family: 'Chewy', 'Comic Sans MS', 'Chalkboard SE', cursive, sans-serif;
     }
 
     .answer-btn:active {
@@ -295,7 +295,7 @@
         padding: 15px;
         margin: 10px 0;
         font-size: 20px;
-        font-family: 'Chewy', cursive;
+        font-family: 'Chewy', 'Comic Sans MS', 'Chalkboard SE', cursive, sans-serif;
         border: 3px solid #8B4513;
         border-radius: 10px;
         cursor: pointer;
@@ -441,8 +441,8 @@
         canvas.width = window.innerWidth;
         canvas.height = window.innerHeight;
         
-        // If height changed significantly and game objects exist, update positions
-        if (oldHeight > 0 && Math.abs(oldHeight - canvas.height) > 50 && groundSegments.length > 0) {
+        // If height changed and game objects exist, update positions
+        if (oldHeight > 0 && Math.abs(oldHeight - canvas.height) > 10 && groundSegments.length > 0) {
             // Update ground segments
             groundSegments.forEach(segment => {
                 segment.y = getGroundY();
@@ -479,6 +479,10 @@
     
     resizeCanvas();
     window.addEventListener('resize', resizeCanvas);
+    window.addEventListener('orientationchange', () => {
+        // Small delay to let browser finish rotation
+        setTimeout(resizeCanvas, 100);
+    });
     window.addEventListener('orientationchange', () => {
         setTimeout(resizeCanvas, 100);
     });
