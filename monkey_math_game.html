@@ -399,9 +399,9 @@
     // Monkey object
     const monkey = {
         x: 150,
-        y: 400,
-        width: 40,
-        height: 46,
+        y: 300,
+        width: 60,
+        height: 60,
         velocityY: 0,
         jumping: false,
         gravity: 0.6,
@@ -688,8 +688,8 @@
         // Create floating platforms with bananas
         for (let i = 0; i < 20; i++) {
             const platformX = 300 + i * 300 + Math.random() * 200;
-            // Platform only 30-60px above ground (easily jumpable)
-            const platformY = groundY - 30 - Math.random() * 30; 
+            // Platform 60-100px above ground (requires jump to reach)
+            const platformY = groundY - 60 - Math.random() * 40; 
             const platformWidth = 100 + Math.random() * 80;
             
             platforms.push({
@@ -787,6 +787,7 @@
     canvas.addEventListener('touchstart', handleJump, { passive: false });
 
     // Load monkey image
+    // Monkey image embedded as base64
     const monkeyImage = new Image();
     let monkeyImageLoaded = false;
     
@@ -799,31 +800,11 @@
         monkeyImageLoaded = false;
     };
     
-    monkeyImage.crossOrigin = 'anonymous';
-    monkeyImage.src = 'https://wybren1986.github.io/Games/monkey.png';
+    monkeyImage.src = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAGQAAABkCAYAAABw4pVUAAAACXBIWXMAAAsTAAALEwEAmpwYAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAMsSURBVHgB7d2/ihNRFMfxu7IoiLCivRBB1NJOsAlbWPgOu8U+hoKFoI9g5za+wxYWSxrBzlJFcMFeURBBCUTY4uYk3jNz7/zJ/JJ8P9UwjJN1DufHvZM7kxAAAAAAAAAAAAAAAACAUjthvc3M9rr/X85dCJBCQcQot7kXR3H/l2f3486bT9+FDPKxRoeIoSBidoMWL46S+z0NokwGHSKGgohZi1FWTkx5GkTWoNeEDhFDQcQoRNYstbNNTLWxFHErvz50iBgKImaoyOpkBNW3IeKLDhFDQcSsMrLWIqY8q4ovOkQMBRHTd2StdUx5+owvOkQMBRHjtdssND/PRsaUp+v4okPEUBAxdpFD46ixixDaKP12z/s72yxs6DBmc67JfxFHh4ihIGKK1mXdOHiR3D89MCcc7YcSNl5mZ29DiZ3Rg+T+0vN452wQX0WxvxT15/FFh4ihIGJqI8vG1NfXj+P2ZPIjNNUmpqw2/zbnnKXxNT07rT3GXsMUOkQMBRHTePX7eHw1breJr03iRfrhq5chFx0ihoKIqY0s24bexPDQTAyPCieGm6RpTFl0iBgKIsZGVrwV7D3T501qvNvdtoXtqKyUnaB1dZ+qj0nl0enHuD3Ou1bcfldHQcR4o6xkfFVILnLI8f3DJG5f2X2UPCYnXnLiyO7/+/ly8phLD+/Fbe/+VcVEOOe6VS6EoEPEUBAxK1tKerx/J+60Iy476vjz5n3yJBdv/Y7bXY2UciLL/s2WHU0FlpJuNgoipquXz9SOrGybH4d0FPyaniT3Xx89mX/Qz9txe2dvHl/fTp6HEtfujuO2HelZS9Fk8cDOtqAgYtq0Xu0aJG8CVREF9R+6EFmfQs94k8O2oyBien3F38LIyplkBec+mD3eizgbX+7JTawNMdErRYeIoSBiOh9lVXwjVnt85orx+QkLI8vKfNiHUda2oyBi2oyySr9V7OQ8OTHlHe/F19AxZdEhYiiImK4mhr3eE1v4oL1u3uVe8ej0oL/aQ4eIoSBieCvpEiaGWEBBxAz+Czs5zye2+Yax4ra/JDpEDAURI/tzFUs6mXhm4l4W5iiImH9JKf57upFvuQAAAABJRU5ErkJggg==';
     
     function drawMonkey() {
-        const x = monkey.x;
-        const y = monkey.y;
-        
-        // Try to draw the image, fallback to emoji if it fails
-        if (monkeyImageLoaded && monkeyImage.complete && monkeyImage.naturalHeight !== 0) {
-            try {
-                ctx.drawImage(monkeyImage, x, y, monkey.width, monkey.height);
-            } catch(e) {
-                // If drawing fails, use emoji
-                ctx.font = '45px Arial';
-                ctx.textAlign = 'center';
-                ctx.textBaseline = 'middle';
-                ctx.fillText('🐵', x + 20, y + 23);
-            }
-        } else {
-            // Fallback to emoji
-            ctx.font = '45px Arial';
-            ctx.textAlign = 'center';
-            ctx.textBaseline = 'middle';
-            ctx.fillText('🐵', x + 20, y + 23);
-        }
+        // Draw monkey at exact position - no offset tricks
+        ctx.drawImage(monkeyImage, monkey.x, monkey.y, monkey.width, monkey.height);
     }
 
     function drawGround() {
@@ -897,10 +878,10 @@
         groundSegments.forEach(segment => {
             if (monkey.x + monkey.width > segment.x - scrollOffset + 5 &&
                 monkey.x < segment.x - scrollOffset + segment.width - 5 &&
-                monkey.y + monkey.height >= segment.y &&
+                monkey.y + monkey.height >= segment.y - 3 &&
                 monkey.y + monkey.height <= segment.y + 15 &&
                 monkey.velocityY >= 0) {
-                monkey.y = segment.y - monkey.height;
+                monkey.y = segment.y - monkey.height - 3; // -3 offset to stand slightly above ground
                 monkey.velocityY = 0;
                 monkey.jumping = false;
                 monkey.jumpsLeft = monkey.maxJumps; // Reset jumps when landing
@@ -912,10 +893,10 @@
         platforms.forEach(platform => {
             if (monkey.x + monkey.width > platform.x - scrollOffset + 5 &&
                 monkey.x < platform.x - scrollOffset + platform.width - 5 &&
-                monkey.y + monkey.height >= platform.y &&
+                monkey.y + monkey.height >= platform.y - 3 &&
                 monkey.y + monkey.height <= platform.y + 15 &&
                 monkey.velocityY >= 0) {
-                monkey.y = platform.y - monkey.height;
+                monkey.y = platform.y - monkey.height - 3; // -3 offset
                 monkey.velocityY = 0;
                 monkey.jumping = false;
                 monkey.jumpsLeft = monkey.maxJumps; // Reset jumps when landing
@@ -993,7 +974,7 @@
             
             // Keep platforms LOW - only 30-60px above ground
             const groundY = getGroundY();
-            const newY = groundY - 30 - Math.random() * 30;
+            const newY = groundY - 60 - Math.random() * 40;
             const newWidth = 100 + Math.random() * 80;
             
             platforms.push({
@@ -1184,73 +1165,30 @@
         document.getElementById('pauseBtn').style.display = 'none';
         
         // Draw semi-transparent overlay
-        ctx.fillStyle = 'rgba(0, 0, 0, 0.8)';
+        ctx.fillStyle = 'rgba(0, 0, 0, 0.85)';
         ctx.fillRect(0, 0, canvas.width, canvas.height);
         
-        // Game Over text with glow effect
-        ctx.shadowColor = '#FF6B6B';
-        ctx.shadowBlur = 20;
-        ctx.fillStyle = '#FF6B6B';
-        ctx.font = 'bold 72px Chewy, cursive';
-        ctx.textAlign = 'center';
-        ctx.fillText('GAME OVER!', canvas.width / 2, canvas.height / 2 - 80);
-        
-        // Reset shadow
-        ctx.shadowBlur = 0;
-        
-        // Score with background
-        ctx.fillStyle = 'rgba(255, 215, 0, 0.9)';
-        ctx.fillRect(canvas.width / 2 - 150, canvas.height / 2 - 20, 300, 60);
-        ctx.fillStyle = '#2C1810';
-        ctx.font = 'bold 36px Chewy, cursive';
-        ctx.fillText(`Jouw Score: ${score}`, canvas.width / 2, canvas.height / 2 + 20);
-        
-        // Restart button background
-        ctx.fillStyle = '#4CAF50';
-        ctx.fillRect(canvas.width / 2 - 180, canvas.height / 2 + 60, 360, 70);
+        // Game Over text - clean and simple
         ctx.fillStyle = 'white';
-        ctx.font = 'bold 32px Chewy, cursive';
-        ctx.fillText('👆 TIK HIER OM OPNIEUW TE SPELEN', canvas.width / 2, canvas.height / 2 + 105);
+        ctx.font = 'bold 64px Chewy, cursive';
+        ctx.textAlign = 'center';
+        ctx.fillText('GAME OVER', canvas.width / 2, canvas.height / 2 - 60);
         
-        // Add visual indicator for touch
-        let glowAlpha = 0;
-        let glowDirection = 1;
+        // Score - clean
+        ctx.fillStyle = '#FFD700';
+        ctx.font = 'bold 40px Chewy, cursive';
+        ctx.fillText(`Score: ${score}`, canvas.width / 2, canvas.height / 2 + 10);
         
-        function animateGlow() {
-            if (!gamePaused || gameRunning) return;
-            
-            glowAlpha += 0.03 * glowDirection;
-            if (glowAlpha >= 1 || glowAlpha <= 0) glowDirection *= -1;
-            
-            // Redraw game over screen with glow
-            ctx.fillStyle = 'rgba(0, 0, 0, 0.8)';
-            ctx.fillRect(0, 0, canvas.width, canvas.height);
-            
-            ctx.shadowColor = '#FF6B6B';
-            ctx.shadowBlur = 20;
-            ctx.fillStyle = '#FF6B6B';
-            ctx.font = 'bold 72px Chewy, cursive';
-            ctx.textAlign = 'center';
-            ctx.fillText('GAME OVER!', canvas.width / 2, canvas.height / 2 - 80);
-            ctx.shadowBlur = 0;
-            
-            ctx.fillStyle = 'rgba(255, 215, 0, 0.9)';
-            ctx.fillRect(canvas.width / 2 - 150, canvas.height / 2 - 20, 300, 60);
-            ctx.fillStyle = '#2C1810';
-            ctx.font = 'bold 36px Chewy, cursive';
-            ctx.fillText(`Jouw Score: ${score}`, canvas.width / 2, canvas.height / 2 + 20);
-            
-            // Animated button
-            ctx.fillStyle = `rgba(76, 175, 80, ${0.7 + glowAlpha * 0.3})`;
-            ctx.fillRect(canvas.width / 2 - 180, canvas.height / 2 + 60, 360, 70);
-            ctx.fillStyle = 'white';
-            ctx.font = 'bold 32px Chewy, cursive';
-            ctx.fillText('👆 TIK HIER OM OPNIEUW TE SPELEN', canvas.width / 2, canvas.height / 2 + 105);
-            
-            requestAnimationFrame(animateGlow);
-        }
+        // Restart button - rounded and clean
+        const btnY = canvas.height / 2 + 60;
+        ctx.fillStyle = '#4CAF50';
+        ctx.beginPath();
+        ctx.roundRect(canvas.width / 2 - 150, btnY, 300, 60, 15);
+        ctx.fill();
         
-        animateGlow();
+        ctx.fillStyle = 'white';
+        ctx.font = 'bold 28px Chewy, cursive';
+        ctx.fillText('Opnieuw Spelen', canvas.width / 2, btnY + 38);
         
         // Setup restart handlers
         function restartGame(e) {
@@ -1273,12 +1211,15 @@
         ctx.fillStyle = '#87CEEB';
         ctx.fillRect(0, 0, canvas.width, canvas.height);
         
+        // Background layers (back to front)
+        drawMountains(); // Draw parallax mountains in back
         drawClouds();
-        drawMountains(); // Draw parallax mountains
+        
+        // Game elements (back to front)
         drawGround();
         drawPlatforms();
         drawBananas();
-        drawMonkey();
+        drawMonkey(); // Draw monkey on top
         
         // Only update game state when not paused
         if (!gamePaused) {
